@@ -1,1 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAARAN Movies</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; user-select: none; }
+        body { background-color: #0f0f0f; color: white; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 500px; }
+        .brand-name { font-size: 32px; font-weight: 900; text-align: center; letter-spacing: 3px; background: linear-gradient(135deg, #ff416c, #ff4b2b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; text-transform: uppercase; }
+        .main-btn { background: rgba(255, 255, 255, 0.08); color: white; border: 1px solid rgba(255, 255, 255, 0.15); padding: 14px 28px; font-size: 16px; font-weight: bold; border-radius: 12px; cursor: pointer; backdrop-filter: blur(5px); transition: all 0.3s ease; margin-bottom: 15px; width: 100%; }
+        .main-btn:hover { background: white; color: black; }
+        .sub-buttons { display: none; gap: 10px; justify-content: center; margin-bottom: 25px; animation: slideDown 0.4s ease forwards; }
+        .sub-btn { background-color: #1f1f1f; color: #bbb; border: 1px solid #333; padding: 10px 22px; font-size: 14px; font-weight: 600; border-radius: 25px; cursor: pointer; transition: all 0.2s ease; flex: 1; text-align: center; }
+        .sub-btn:hover, .sub-btn.active { background: linear-gradient(135deg, #ff416c, #ff4b2b); color: white; border-color: transparent; box-shadow: 0 4px 12px rgba(255, 75, 43, 0.3); }
+        .movie-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding-bottom: 30px; }
+        
+        .movie-card { background-color: #1a1a1a; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); transition: all 0.3s ease; cursor: pointer; border: 1px solid #252525; display: none; }
+        .movie-card:hover { transform: translateY(-5px); border-color: #ff4b2b; }
+        
+        .poster-wrapper { width: 100%; height: 240px; background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500&auto=format&fit=crop'); background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 20px; position: relative; }
+        .poster-badge { position: absolute; top: 12px; left: 12px; background: #ff4b2b; color: white; font-size: 10px; font-weight: bold; padding: 4px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        .poster-main-title { font-size: 24px; font-weight: 900; color: #fff; text-shadow: 0 0 10px rgba(255,75,43,0.8), 0 4px 5px rgba(0,0,0,0.5); letter-spacing: 2px; text-transform: uppercase; font-family: 'Arial Black', sans-serif; }
+        .poster-sub { font-size: 11px; color: #ff4b2b; font-weight: bold; letter-spacing: 1px; margin-top: 2px; }
+        
+        .movie-title { padding: 12px; font-size: 14px; font-weight: 600; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        /* Details Page */
+        #detailPage { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #0f0f0f; z-index: 999; padding: 20px; flex-direction: column; align-items: center; justify-content: center; }
+        .detail-container { width: 100%; max-width: 400px; text-align: center; }
+        
+        .detail-poster-view { width: 80%; height: 320px; background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.9)), url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500&auto=format&fit=crop'); background-size: cover; background-position: center; border-radius: 16px; box-shadow: 0 8px 25px rgba(255, 75, 43, 0.25); margin: 0 auto 20px auto; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 30px; border: 1px solid rgba(255,75,43,0.3); }
+        .detail-main-title { font-size: 32px; font-weight: 900; color: #fff; text-shadow: 0 0 15px rgba(255,75,43,1); letter-spacing: 3px; }
+        
+        .detail-title { font-size: 24px; font-weight: bold; margin-bottom: 30px; }
+        .action-btn { width: 100%; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 30px; border: none; cursor: pointer; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s; text-decoration: none; }
+        .play-btn { background: #fff; color: #000; }
+        .download-btn { background: linear-gradient(135deg, #ff416c, #ff4b2b); color: white; }
+        .back-btn { background: transparent; color: #888; border: 1px solid #333; margin-top: 10px; }
+
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="mainPage">
+        <div class="brand-name">MAARAN</div>
+        <button class="main-btn" onclick="toggleMenu()">Select Language (Menu)</button>
+
+        <div class="sub-buttons" id="languageMenu">
+            <button class="sub-btn active" onclick="filterLanguage('telugu', this)">Telugu</button>
+            <button class="sub-btn" onclick="filterLanguage('hindi', this)">Hindi</button>
+            <button class="sub-btn" onclick="filterLanguage('english', this)">English</button>
+        </div>
+
+        <div class="movie-grid">
+            <!-- గూగుల్ డ్రైవ్ ఒరిజినల్ వ్యూ లింక్ మరియు డౌన్లోడ్ లింక్ ఇక్కడ సెట్ చేశాను బ్రో -->
+            <div class="movie-card" data-lang="telugu" onclick="openMovie('Peddi (2026)', 'https://drive.google.com/file/d/10pbMSmjeCrW6gfVGfr1SNMIb0GxXrcG2/view?usp=drivesdk', 'https://drive.google.com/uc?export=download&id=10pbMSmjeCrW6gfVGfr1SNMIb0GxXrcG2')">
+                <div class="poster-wrapper">
+                    <span class="poster-badge">New Movie</span>
+                    <div class="poster-main-title">PEDDI</div>
+                    <div class="poster-sub">2026 CINEMA</div>
+                </div>
+                <div class="movie-title">Peddi (2026)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Movie Details Screen -->
+    <div id="detailPage">
+        <div class="detail-container">
+            <div class="detail-poster-view">
+                <div class="detail-main-title">PEDDI</div>
+                <div style="font-size:12px; color:#ff4b2b; font-weight:bold; letter-spacing:2px; margin-top:5px;">OFFICIAL POSTER</div>
+            </div>
+            <div id="clickedTitle" class="detail-title">Movie Title</div>
+            
+            <!-- ఇక్కడ క్లిక్ చేస్తే ఎర్రర్ రాకుండా డైరెక్ట్ సేఫ్ గా ప్లే అవుతుంది -->
+            <a id="realPlayBtn" href="" target="_blank" class="action-btn play-btn">▶ Watch Now (Play)</a>
+            <a id="realDownloadBtn" href="" download class="action-btn download-btn">📥 Download Now</a>
+            
+            <button class="action-btn back-btn" onclick="closePage()">← Back to Home</button>
+        </div>
+    </div>
+
+    <script>
+        let currentVideoLink = "";
+
+        function toggleMenu() {
+            var menu = document.getElementById("languageMenu");
+            menu.style.display = (menu.style.display === "flex") ? "none" : "flex";
+        }
+
+        function filterLanguage(lang, btn) {
+            let buttons = document.querySelectorAll('.sub-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            let cards = document.querySelectorAll('.movie-card');
+            cards.forEach(card => {
+                if (card.getAttribute('data-lang') === lang) {
+                    card.style.display = "block";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        }
+
+        function openMovie(title, playLink, downloadLink) {
+            document.getElementById("clickedTitle").innerText = title;
+            
+            // ప్లే బటన్ లింక్ అప్‌డేట్
+            document.getElementById("realPlayBtn").href = playLink;
+            
+            // డౌన్లోడ్ బటన్ లింక్ అప్‌డేట్
+            let dBtn = document.getElementById("realDownloadBtn");
+            dBtn.href = downloadLink;
+            dBtn.setAttribute('download', title + ".mp4"); 
+            
+            document.getElementById("mainPage").style.display = "none";
+            document.getElementById("detailPage").style.display = "flex";
+            window.scrollTo(0,0);
+        }
+
+        function closePage() {
+            document.getElementById("detailPage").style.display = "none";
+            document.getElementById("mainPage").style.display = "block";
+        }
+
+        window.onload = function() {
+            filterLanguage('telugu', document.querySelector('.sub-btn'));
+        }
+    </script>
+</body>
+</html>
 
